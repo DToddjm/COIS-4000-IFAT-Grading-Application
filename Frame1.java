@@ -10,10 +10,11 @@ import java.awt.event.ActionListener;
 import java.io.File;
 
 import javax.swing.*;
+import javax.swing.filechooser.FileFilter;
 
 public class Frame1 {
 	private JFrame frame;
-	public File[] allFiles;
+	public File file;
 	public Frame1(){
 		initialize();
 		
@@ -60,24 +61,22 @@ public class Frame1 {
 		panel3.setBackground(Color.LIGHT_GRAY);
 		
 		  final JLabel label = new JLabel();
-		pickFolderButton.addActionListener(new ActionListener() {
-	         @Override
-	         public void actionPerformed(ActionEvent e) {
-	            JFileChooser fileChooser = new JFileChooser();
-	            fileChooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
-	            int option = fileChooser.showOpenDialog(frame);
-	            if(option == JFileChooser.APPROVE_OPTION){
-	               File folder = fileChooser.getSelectedFile();
-	                allFiles = folder.listFiles();
-	               if (allFiles == null || allFiles.length == 0) {
-	            	    throw new RuntimeException("No files present in the directory: " + folder.getAbsolutePath());
-	            	  }
-	               label.setText("Folder Selected: " + folder.getName());
-	            }else{
-	               label.setText("Open command canceled");
-	            }
-	         }
-	      });
+		  pickFolderButton.addActionListener(new ActionListener() {
+		         @Override
+		         public void actionPerformed(ActionEvent e) {
+		            JFileChooser fileChooser = new JFileChooser();
+		            fileChooser.addChoosableFileFilter(new ImageFilter());
+		            fileChooser.setAcceptAllFileFilterUsed(false);
+
+		            int option = fileChooser.showOpenDialog(frame);
+		            if(option == JFileChooser.APPROVE_OPTION){
+		                file = fileChooser.getSelectedFile();
+		               label.setText("File Selected: " + file.getName());
+		            }else{
+		               label.setText("Open command canceled");
+		            }
+		         }
+		      });
 		
 		
 		panel3.add(pickFolderButton);
@@ -112,5 +111,44 @@ public class Frame1 {
 	
 	public void show() {
 		frame.setVisible(true);
+	}
+	
+	class ImageFilter extends FileFilter {
+		   public final static String PDF = "pdf";
+
+		   @Override
+		   public boolean accept(File f) {
+		      if (f.isDirectory()) {
+		         return true;
+		      }
+
+		      String extension = getExtension(f);
+		      if (extension != null) {
+		         if (extension.equals(PDF)) {
+		            return true;
+		         } else {
+		            return false;
+		         }
+		      }
+		      return false;
+		   }
+	
+
+		   @Override
+		   public String getDescription() {
+		      return "PDF Only";
+		   }
+
+		   String getExtension(File f) {
+		      String ext = null;
+		      String s = f.getName();
+		      int i = s.lastIndexOf('.');
+		   
+		      if (i > 0 &&  i < s.length() - 1) {
+		         ext = s.substring(i+1).toLowerCase();
+		      }
+		      return ext;
+		   } 
+		   
 	}
 }
