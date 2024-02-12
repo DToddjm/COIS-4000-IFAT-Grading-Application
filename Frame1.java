@@ -52,7 +52,7 @@ public class Frame1 {
 		JLabel welcLabel = new JLabel("Welcome to IF-AT Grader!");
 		welcLabel.setFont(new Font("Comic Sans MS", Font.BOLD, 30));
 		
-		Button pickFolderButton = new Button("Choose Folder");
+		Button pickFolderButton = new Button("Choose PDF");
 		panel2.add(welcLabel);
 		//panel2.add(pickFolderButton);
 		
