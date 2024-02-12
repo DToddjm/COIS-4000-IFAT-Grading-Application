@@ -24,6 +24,7 @@ public class Frame2 extends Frame1 {
 	public File file = super.file;//array of files in chosen folder
 	public int questNum = 	10; //Inputed number of questions 
 	public JCheckBox[][] checkBoxes = new JCheckBox[10][10];
+	public int answers[][];
 	public Frame2(){
 		
 		initialize();
@@ -116,7 +117,7 @@ Button nextButton = new Button("Continue");
 				@Override
 			public void actionPerformed(ActionEvent e) {
 					
-					int[][] answers = new int[questNum][5]; 
+					 answers = new int[questNum][5]; 
 					
 					for (int i =0;i<questNum;i++) {
 						for (int j =0;j<5;j++) {
