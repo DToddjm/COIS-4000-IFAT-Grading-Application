@@ -42,7 +42,7 @@ public class StudentIFATCard {
     private int numQuestions; // stores the number of questions of the IFAT assessment
     private int numBoxes; // stores the number of boxes of the IFAT assessment
     private Hashtable<String, Integer> weights; // stores the percentage weights for each scratched box
-    private int[] scores; // stores the attempt score (percentage) for each question
+    private int[] scores; // stores the attempt score (grade) for each question
     private int[][] cardArray; // stores a digital representation of the IFAT card as a 2D matrix of numQuestions x numBoxes
     private double grade; // stores the final grade of the assessment
     // image detection attributes
@@ -75,9 +75,13 @@ public class StudentIFATCard {
         weights.put("Attempt 4", 25); // attempt 4 gets 25%
         weights.put("Attempt 5", 0); // attempt 5 gets 0%
     }
+    // 3 argument constructor
     public StudentIFATCard(String path, BufferedImage img, Mat cardMtx){
+        // set the filepath
         filepath = path;
+        // set the buffered image
         imgCard = img;
+        // set the Mat obj
         matCard = cardMtx;
         
         // set default values
@@ -106,7 +110,7 @@ public class StudentIFATCard {
         int numScratched; // number of unscratched boxes
         int answerIndex; // stores the index of the correct answer in the asnwer key
         boolean correctAnswer; // stores whether or not the correct answer is among the scratched boxes
-
+        // outer for loop for each row/question
         for (int i = 0; i < cardArray.length; i++) {
             numScratched = 0; // set numscratched to 0 for each row iteration
             answerIndex = answerKey[i]; // get the answer key index for each row iteration
