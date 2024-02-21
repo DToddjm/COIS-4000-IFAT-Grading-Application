@@ -8,9 +8,17 @@ import java.awt.Font;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.File;
+import java.io.IOException;
+import java.nio.file.Paths;
+import java.util.List;
 
+import javax.imageio.ImageIO;
 import javax.swing.*;
 import javax.swing.filechooser.FileFilter;
+
+import com.ironsoftware.ironpdf.*;
+import java.awt.image.BufferedImage;
+
 
 public class Frame1 {
 	private JFrame frame;
@@ -72,6 +80,12 @@ public class Frame1 {
 		            if(option == JFileChooser.APPROVE_OPTION){
 		                file = fileChooser.getSelectedFile();
 		               label.setText("File Selected: " + file.getName());
+
+					   try {
+                        convertPDFToImages(file);
+                    } catch (IOException ex) {
+                        ex.printStackTrace();
+                    }
 		            }else{
 		               label.setText("Open command canceled");
 		            }
@@ -89,7 +103,19 @@ public class Frame1 {
 		frame.setLocationRelativeTo(null);
 		
 	}
+
+	 private void convertPDFToImages(File pdfFile) throws IOException {
+        PdfDocument pdfDocument = PdfDocument.fromFile(Paths.get(pdfFile.getAbsolutePath()));
+        List<BufferedImage> extractedImages = pdfDocument.toBufferedImages();
+        int pageIndex = 1;
+        for (BufferedImage extractedImage : extractedImages) {
+            String fileName = "image" + pageIndex++ + ".png"; // Change to PNG format as mentioned in the IronPDF example
+            ImageIO.write(extractedImage, "PNG", new File(fileName));
+        }
+    }
+
 	
+
 	private class CloseListener implements ActionListener{
 	    @Override
 	    public void actionPerformed(ActionEvent e) {
