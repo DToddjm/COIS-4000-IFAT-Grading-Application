@@ -24,7 +24,7 @@ public class Frame2 extends Frame1 {
 	public File file = super.file;//array of files in chosen folder
 	public int questNum = 	10; //Inputed number of questions 
 	public JCheckBox[][] checkBoxes = new JCheckBox[10][10];
-	public int answers[][];
+	public int answers[][]; //matrix of user's answers
 	public Frame2(){
 		
 		initialize();
@@ -117,22 +117,41 @@ Button nextButton = new Button("Continue");
 				@Override
 			public void actionPerformed(ActionEvent e) {
 					
-					 answers = new int[questNum][5]; 
+					 answers = new int[questNum][5];
 					
 					for (int i =0;i<questNum;i++) {
+						System.out.println("");
 						for (int j =0;j<5;j++) {
 							if (checkBoxes[i][j].isSelected()) {
 								answers[i][j]=1;
 							}
-							else answers[i][j]=0;
+							else { answers[i][j]=0;}
+							System.out.print(answers[i][j]);
+
 						}
 					}
+					
+					//for going into next window
 		 
 				}
 				
 			});
-				
-		 panel1.add(nextButton);
+			
+			Button custGr = new Button("Custom Grading");
+			custGr.addActionListener(new ActionListener() {
+					
+					@Override
+				public void actionPerformed(ActionEvent e) {
+						
+						CustomGrades c = new CustomGrades();
+						c.show();
+			
+						
+					}
+			});
+			
+			 panel1.add(custGr);
+			 panel1.add(nextButton);
 	        
 	        panel3.revalidate();
 	        panel3.repaint();
@@ -142,6 +161,7 @@ Button nextButton = new Button("Continue");
 	});
 		
 		 panel2.add(conButton);
+		 
 		 
 		 
 		
