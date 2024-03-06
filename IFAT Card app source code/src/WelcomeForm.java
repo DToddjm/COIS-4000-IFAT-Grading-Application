@@ -4,12 +4,18 @@ import java.awt.event.WindowEvent;
 import java.io.File;
 import javax.swing.JFileChooser;
 import org.opencv.core.Core;
+import java.awt.image.BufferedImage;
+import org.apache.pdfbox.pdmodel.PDDocument;
+import org.apache.pdfbox.rendering.PDFRenderer;
+
 
 /**
  *
  * @author YahMa
  */
 public class WelcomeForm extends javax.swing.JFrame {
+	
+	private BufferedImage[] pdfPages; // Array to store pages of PDF as BufferedImage
 
     /**
      * Creates new form WelcomeForm
@@ -87,6 +93,11 @@ public class WelcomeForm extends javax.swing.JFrame {
         btn_PDF.setText("Select pdf file");
         btn_PDF.setEnabled(false);
         btn_PDF.setName("btn_PDF"); // NOI18N
+        btn_PDF.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btn_PDFActionPerformed(evt);
+            }
+        });
 
         btn_Folder.setText("Select image folder");
         btn_Folder.setEnabled(false);
@@ -221,6 +232,39 @@ public class WelcomeForm extends javax.swing.JFrame {
             txt_filepath.setText("C://filepath");
         }
     }//GEN-LAST:event_jRadioButton2ActionPerformed
+    
+    private void btn_PDFActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btn_PDFActionPerformed
+        JFileChooser fileChooser = new JFileChooser();
+        fileChooser.setFileSelectionMode(JFileChooser.FILES_ONLY);
+        int returnValue = fileChooser.showOpenDialog(this);
+        if (returnValue == JFileChooser.APPROVE_OPTION) {
+            File selectedFile = fileChooser.getSelectedFile();
+            path = selectedFile.getAbsolutePath();
+            txt_filepath.setText(path);
+
+            try {
+                // Convert PDF to BufferedImage
+                PDDocument document = PDDocument.load(selectedFile);
+                PDFRenderer renderer = new PDFRenderer(document);
+
+                int numPages = document.getNumberOfPages();
+                pdfPages = new BufferedImage[numPages]; // Initialize array to store pages
+                
+                // Iterate through each page and render as BufferedImage
+                for (int i = 0; i < numPages; i++) {
+                    pdfPages[i] = renderer.renderImage(i);
+                } 
+                document.close();
+
+                btn_Next.setEnabled(true);
+
+            } catch (Exception e) {
+            	txt_filepath.setText("Failed to load folder");
+            }
+        }else{
+            txt_filepath.setText("No File chosen");
+        }
+    }//GEN-LAST:event_btn_PDFActionPerformed
 
     private void btn_FolderActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btn_FolderActionPerformed
         
