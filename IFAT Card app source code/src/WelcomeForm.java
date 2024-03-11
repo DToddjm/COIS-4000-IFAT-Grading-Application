@@ -2,11 +2,19 @@ import java.awt.Toolkit;
 import java.awt.Window;
 import java.awt.event.WindowEvent;
 import java.io.File;
+
+import javax.imageio.ImageIO;
 import javax.swing.JFileChooser;
 import org.opencv.core.Core;
+
+import nu.pattern.OpenCV;
+
 import java.awt.image.BufferedImage;
+
+import org.apache.pdfbox.Loader;
 import org.apache.pdfbox.pdmodel.PDDocument;
 import org.apache.pdfbox.rendering.PDFRenderer;
+
 
 
 /**
@@ -15,7 +23,7 @@ import org.apache.pdfbox.rendering.PDFRenderer;
  */
 public class WelcomeForm extends javax.swing.JFrame {
 	
-	private BufferedImage[] pdfPages; // Array to store pages of PDF as BufferedImage
+
 
     /**
      * Creates new form WelcomeForm
@@ -239,32 +247,53 @@ public class WelcomeForm extends javax.swing.JFrame {
         int returnValue = fileChooser.showOpenDialog(this);
         if (returnValue == JFileChooser.APPROVE_OPTION) {
             File selectedFile = fileChooser.getSelectedFile();
-            path = selectedFile.getAbsolutePath();
-            txt_filepath.setText(path);
+            
+            txt_filepath.setText(selectedFile.getPath());
 
             try {
                 // Convert PDF to BufferedImage
-                PDDocument document = PDDocument.load(selectedFile);
+                PDDocument document = Loader.loadPDF(selectedFile);
                 PDFRenderer renderer = new PDFRenderer(document);
 
                 int numPages = document.getNumberOfPages();
-                pdfPages = new BufferedImage[numPages]; // Initialize array to store pages
+           	    BufferedImage[] pdfPages = new BufferedImage[numPages]; // Array to store pages of PDF as BufferedImage
+             
                 
                 // Iterate through each page and render as BufferedImage
                 for (int i = 0; i < numPages; i++) {
                     pdfPages[i] = renderer.renderImage(i);
+                    
                 } 
+                //delete all files in "image" folder
+                File dir = new File("./Images");
+                for(File file: dir.listFiles()) {
+                    if (!file.isDirectory()) {
+                        file.delete();}
+                }
+                for (int i = 0; i < numPages; i++) {
+                	
+                //	write to image folder
+                	ImageIO.write(pdfPages[i], "png", new File("./Images/image"+(i+1)+".png"));
+                	
+                }
+                path = ("./Images");
+             
                 document.close();
-
+                
+                
+                
                 btn_Next.setEnabled(true);
-
+                
             } catch (Exception e) {
-            	txt_filepath.setText("Failed to load folder");
+            	txt_filepath.setText("Failed to load file");
             }
         }else{
             txt_filepath.setText("No File chosen");
         }
     }//GEN-LAST:event_btn_PDFActionPerformed
+    
+    
+    
 
     private void btn_FolderActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btn_FolderActionPerformed
         
@@ -308,7 +337,8 @@ public class WelcomeForm extends javax.swing.JFrame {
         /* If Nimbus (introduced in Java SE 6) is not available, stay with the default look and feel.
          * For details see http://download.oracle.com/javase/tutorial/uiswing/lookandfeel/plaf.html 
          */
-        System.loadLibrary(Core.NATIVE_LIBRARY_NAME);
+       // System.loadLibrary(Core.NATIVE_LIBRARY_NAME);
+        OpenCV.loadLocally();
         try {
             for (javax.swing.UIManager.LookAndFeelInfo info : javax.swing.UIManager.getInstalledLookAndFeels()) {
                 if ("Nimbus".equals(info.getName())) {
