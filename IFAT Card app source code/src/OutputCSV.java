@@ -22,7 +22,7 @@ public class OutputCSV {
         PrintWriter writer = new PrintWriter(file);
         
         // Header
-        writer.println("Student No, Name, Course, Grade");
+        writer.println("Student No, Name, Course, Grade, Image Path");
                 
         // Row data
         for(StudentIFATCard card : cards) {
@@ -30,7 +30,8 @@ public class OutputCSV {
                 card.getStudentNo() + "," + 
                 card.getStudentName() + "," +
                 card.getCourse() + "," +
-                card.getGrade()
+                card.getGrade() + "," +
+                card.getFilePath()
            );
         }
         
@@ -57,7 +58,7 @@ public class OutputCSV {
             PrintWriter writer = new PrintWriter(detailCSV);
 
             // Header
-            writer.println("Question,Attempts,Score,Image Path");
+            writer.println("Question,Attempts,Score");
 
             // Row data
             for (int q = 0; q < card.getNumQuestions(); ++q) {
@@ -68,7 +69,7 @@ public class OutputCSV {
                 }
                 String attempts = attemptsBuilder.toString();
                 int p = q + 1;
-                writer.println(p + "," + attempts + "," + card.getScores()[q] + "," + card.getFilePath());
+                writer.println(p + "," + attempts + "," + card.getScores()[q]);
             }
 
             writer.close();
