@@ -1,6 +1,8 @@
 
 import java.io.File;
 import java.util.Hashtable;
+import java.util.ArrayList;
+import javax.swing.JOptionPane;
 import javax.swing.JFileChooser;
 
 /*
@@ -16,6 +18,7 @@ public class ExportForm extends javax.swing.JFrame {
     Hashtable<String, StudentIFATCard> studentCardTable;
     String path;
     private final JFileChooser fc = new JFileChooser();
+    private OutputCSV outputCSV;
     
     /**
      * Creates new form ExportForm
@@ -26,7 +29,7 @@ public class ExportForm extends javax.swing.JFrame {
     public ExportForm(Hashtable<String, StudentIFATCard> cards) {
         initComponents();
         studentCardTable = cards;
-        
+        outputCSV = new OutputCSV();
     }
 
     /**
@@ -74,7 +77,12 @@ public class ExportForm extends javax.swing.JFrame {
 
         btn_Export.setText("Export");
         btn_Export.setName("btn_Export"); // NOI18N
-
+        btn_Export.addActionListener(new java.awt.event.ActionListener() {
+        	public void actionPerformed(java.awt.event.ActionEvent evt) {
+              btn_ExportActionPerformed(evt);
+        	}
+        });
+        
         btn_Exit.setText("Exit");
         btn_Exit.setName("btn_Exit"); // NOI18N
         btn_Exit.addActionListener(new java.awt.event.ActionListener() {
@@ -153,6 +161,33 @@ public class ExportForm extends javax.swing.JFrame {
         }
         txt_Folder.setEnabled(true);
     }//GEN-LAST:event_btn_SelectActionPerformed
+    
+    private void btn_ExportActionPerformed(java.awt.event.ActionEvent evt) {
+        // Check if the folder path is set
+        if (!txt_Folder.getText().isEmpty()) {
+            try {
+                File outputDir = new File(txt_Folder.getText());
+                
+                // Pass the studentCardTable and the output file to writeResultCSV
+                File resultCSV = new File(outputDir, "result.csv");
+                outputCSV.writeResultCSV(new ArrayList<>(studentCardTable.values()), resultCSV);
+                
+                // Create a new folder named "Details" inside the output directory
+                File detailsDir = new File(outputDir, "Details");
+                detailsDir.mkdir(); // Create the "Details" folder
+
+                // Pass the studentCardTable and the "Details" folder to writeDetailCSVs
+                outputCSV.writeDetailCSVs(new ArrayList<>(studentCardTable.values()), detailsDir);
+            } catch (Exception e) {
+                e.printStackTrace();
+                // Handle the exception appropriately, e.g., display an error message
+                JOptionPane.showMessageDialog(this, "An error occurred while exporting the data: " + e.getMessage(), "Export Error", JOptionPane.ERROR_MESSAGE);
+            }
+        } else {
+            // Handle the case when the folder path is not set
+            JOptionPane.showMessageDialog(this, "Please select an empty folder to export the data.", "Export Error", JOptionPane.ERROR_MESSAGE);
+        }
+    }//GEN-LAST:event_btn_ExportActionPerformed
 
     private void btn_ExitActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btn_ExitActionPerformed
         System.exit(0);
