@@ -1,44 +1,47 @@
+
 import java.awt.Toolkit;
 import java.awt.Window;
 import java.awt.event.WindowEvent;
 import java.io.File;
-
-import javax.imageio.ImageIO;
 import javax.swing.JFileChooser;
 import org.opencv.core.Core;
-
-import nu.pattern.OpenCV;
-
 import java.awt.image.BufferedImage;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import javax.imageio.ImageIO;
 
 import org.apache.pdfbox.Loader;
 import org.apache.pdfbox.pdmodel.PDDocument;
 import org.apache.pdfbox.rendering.PDFRenderer;
-
-
+import org.opencv.core.Mat;
+import org.opencv.core.Size;
+import org.opencv.features2d.Features2d;
+import org.opencv.imgcodecs.Imgcodecs;
+import org.opencv.imgproc.Imgproc;
 
 /**
  *
  * @author YahMa
  */
 public class WelcomeForm extends javax.swing.JFrame {
-	
-
 
     /**
      * Creates new form WelcomeForm
      */
     String path;
     private final JFileChooser fc;
+    IFATController controller = new IFATController();
+
     public WelcomeForm() {
         initComponents();
         fc = new JFileChooser();
-        
+
         /* uncomment the next line and add an absolute path to set the default 
         directory when the open file dialog runs. It saves you from manually
         navigating to the folder with the images each time the application runs
         though this is strictly optional and the app still functions without it.
-        */
+         */
         //fc.setCurrentDirectory(new File(""));
     }
 
@@ -226,7 +229,7 @@ public class WelcomeForm extends javax.swing.JFrame {
     }// </editor-fold>//GEN-END:initComponents
 
     private void jRadioButton1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jRadioButton1ActionPerformed
-        if(jRadioButton1.isSelected()){
+        if (jRadioButton1.isSelected()) {
             btn_PDF.setEnabled(true);
             btn_Folder.setEnabled(false);
             txt_filepath.setText("C://filepath");
@@ -234,82 +237,31 @@ public class WelcomeForm extends javax.swing.JFrame {
     }//GEN-LAST:event_jRadioButton1ActionPerformed
 
     private void jRadioButton2ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jRadioButton2ActionPerformed
-        if(jRadioButton2.isSelected()){
+        if (jRadioButton2.isSelected()) {
             btn_PDF.setEnabled(false);
             btn_Folder.setEnabled(true);
             txt_filepath.setText("C://filepath");
         }
     }//GEN-LAST:event_jRadioButton2ActionPerformed
-    
-    private void btn_PDFActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btn_PDFActionPerformed
-        JFileChooser fileChooser = new JFileChooser();
-        fileChooser.setFileSelectionMode(JFileChooser.FILES_ONLY);
-        int returnValue = fileChooser.showOpenDialog(this);
-        if (returnValue == JFileChooser.APPROVE_OPTION) {
-            File selectedFile = fileChooser.getSelectedFile();
-            
-            txt_filepath.setText(selectedFile.getPath());
-
-            try {
-                // Convert PDF to BufferedImage
-                PDDocument document = Loader.loadPDF(selectedFile);
-                PDFRenderer renderer = new PDFRenderer(document);
-
-                int numPages = document.getNumberOfPages();
-           	    BufferedImage[] pdfPages = new BufferedImage[numPages]; // Array to store pages of PDF as BufferedImage
-             
-                
-                // Iterate through each page and render as BufferedImage
-                for (int i = 0; i < numPages; i++) {
-                    pdfPages[i] = renderer.renderImage(i);
-                    
-                } 
-                //delete all files in "image" folder
-                File dir = new File("./Images");
-                for(File file: dir.listFiles()) {
-                    if (!file.isDirectory()) {
-                        file.delete();}
-                }
-                for (int i = 0; i < numPages; i++) {
-                	
-                //	write to image folder
-                	ImageIO.write(pdfPages[i], "png", new File("./Images/image"+(i+1)+".png"));
-                	
-                }
-                path = ("./Images");
-             
-                document.close();
-                
-                
-                
-                btn_Next.setEnabled(true);
-                
-            } catch (Exception e) {
-            	txt_filepath.setText("Failed to load file");
-            }
-        }else{
-            txt_filepath.setText("No File chosen");
-        }
-    }//GEN-LAST:event_btn_PDFActionPerformed
-    
-    
-    
 
     private void btn_FolderActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btn_FolderActionPerformed
-        
-        
+
         fc.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
         int returnval = fc.showOpenDialog(this);
-        if(returnval == JFileChooser.APPROVE_OPTION){
+        if (returnval == JFileChooser.APPROVE_OPTION) {
             try {
                 File file = fc.getSelectedFile();
                 path = file.getPath();
                 txt_filepath.setText(path);
                 btn_Next.setEnabled(true);
+                Path dir = Paths.get("./IFATGrading/Grading Results");
+                if(!Files.exists(dir)){
+                    Files.createDirectories(dir);
+                }
             } catch (Exception e) {
                 txt_filepath.setText("Failed to load folder");
             }
-        }else{
+        } else {
             txt_filepath.setText("No File chosen");
         }
     }//GEN-LAST:event_btn_FolderActionPerformed
@@ -323,11 +275,78 @@ public class WelcomeForm extends javax.swing.JFrame {
         LoadingForm lf = new LoadingForm(path);
         lf.setVisible(true);
     }//GEN-LAST:event_btn_NextActionPerformed
-    
-    public void close(){
+
+    private void btn_PDFActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btn_PDFActionPerformed
+        //JFileChooser fileChooser = new JFileChooser();
+        Imgcodecs codecs = new Imgcodecs();
+        String templatePath = ".\\Template";
+        fc.setFileSelectionMode(JFileChooser.FILES_ONLY);
+        int returnValue = fc.showOpenDialog(this);
+        if (returnValue == JFileChooser.APPROVE_OPTION) {
+            File selectedFile = fc.getSelectedFile();
+
+            
+            Mat regTemplate = codecs.imread(templatePath + "\\test card1.png");
+
+            try {
+                // Convert PDF to BufferedImage
+                PDDocument document = Loader.loadPDF(selectedFile);
+                PDFRenderer renderer = new PDFRenderer(document);
+
+                int numPages = document.getNumberOfPages();
+                BufferedImage[] pdfPages = new BufferedImage[numPages]; // Array to store pages of PDF as BufferedImage
+                Mat[] cardMatObjs = new Mat[numPages];
+                
+
+                // Iterate through each page and render as BufferedImage/Mat obj
+                for (int i = 0; i < numPages; i++) {
+                    pdfPages[i] = renderer.renderImage(i);
+                    cardMatObjs[i] = controller.convertToMat(pdfPages[i]);
+                    Imgproc.resize(cardMatObjs[i], cardMatObjs[i], new Size(0,0), 0.8, 0.8,Imgproc.INTER_AREA);
+                    cardMatObjs[i] = controller.alignImages(cardMatObjs[i], regTemplate);
+                }
+                
+
+                
+                Path dir = Paths.get("./IFATGrading/Images");
+                if(!Files.exists(dir)){
+                    Files.createDirectories(dir);
+                }
+                Path resultDir = Paths.get("./IFATGrading/Grading Results");
+                if(!Files.exists(resultDir)){
+                    Files.createDirectories(resultDir);
+                }
+
+                String tempFileName;
+                
+                for (int i = 0; i < numPages; i++) {
+                	
+                //	write to image folder
+                        tempFileName = "./IFATGrading/Images/pdfScan_" + i + ".png";
+                        codecs.imwrite(tempFileName,cardMatObjs[i]);
+                }
+                
+                
+                path = ("./IFATGrading/Images");
+                txt_filepath.setText("/IFATGrading/Images");
+                document.close();
+
+                btn_Next.setEnabled(true);
+
+            } catch (Exception e) {
+                txt_filepath.setText("Failed to load file");
+                System.out.println(e.getMessage());
+            }
+        } else {
+            txt_filepath.setText("No File chosen");
+        }
+    }//GEN-LAST:event_btn_PDFActionPerformed
+
+    public void close() {
         WindowEvent closeWindow = new WindowEvent(this, WindowEvent.WINDOW_CLOSING);
         Toolkit.getDefaultToolkit().getSystemEventQueue().postEvent(closeWindow);
     }
+
     /**
      * @param args the command line arguments
      */
@@ -337,8 +356,7 @@ public class WelcomeForm extends javax.swing.JFrame {
         /* If Nimbus (introduced in Java SE 6) is not available, stay with the default look and feel.
          * For details see http://download.oracle.com/javase/tutorial/uiswing/lookandfeel/plaf.html 
          */
-       // System.loadLibrary(Core.NATIVE_LIBRARY_NAME);
-        OpenCV.loadLocally();
+        System.loadLibrary(Core.NATIVE_LIBRARY_NAME);
         try {
             for (javax.swing.UIManager.LookAndFeelInfo info : javax.swing.UIManager.getInstalledLookAndFeels()) {
                 if ("Nimbus".equals(info.getName())) {

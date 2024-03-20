@@ -1,9 +1,9 @@
 
 import java.io.File;
 import java.util.Hashtable;
+import javax.swing.JFileChooser;
 import java.util.ArrayList;
 import javax.swing.JOptionPane;
-import javax.swing.JFileChooser;
 
 /*
  * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
@@ -30,6 +30,7 @@ public class ExportForm extends javax.swing.JFrame {
         initComponents();
         studentCardTable = cards;
         outputCSV = new OutputCSV();
+        
     }
 
     /**
@@ -49,6 +50,10 @@ public class ExportForm extends javax.swing.JFrame {
         txt_Folder = new javax.swing.JTextField();
         btn_Export = new javax.swing.JButton();
         btn_Exit = new javax.swing.JButton();
+        jLabel5 = new javax.swing.JLabel();
+        jLabel6 = new javax.swing.JLabel();
+        jLabel7 = new javax.swing.JLabel();
+        txt_FileName = new javax.swing.JTextField();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
         setTitle("Export Grading Results");
@@ -56,7 +61,7 @@ public class ExportForm extends javax.swing.JFrame {
         jLabel1.setFont(new java.awt.Font("Segoe UI", 0, 24)); // NOI18N
         jLabel1.setText("Export Results");
 
-        jLabel2.setText("The IFAT card data will be exported as a comma separated value (CSV) file in the specified folder");
+        jLabel2.setText("The IFAT card data will be exported as a comma separated value ");
         jLabel2.setVerticalAlignment(javax.swing.SwingConstants.TOP);
 
         jLabel3.setText("Select folder:");
@@ -78,11 +83,11 @@ public class ExportForm extends javax.swing.JFrame {
         btn_Export.setText("Export");
         btn_Export.setName("btn_Export"); // NOI18N
         btn_Export.addActionListener(new java.awt.event.ActionListener() {
-        	public void actionPerformed(java.awt.event.ActionEvent evt) {
-              btn_ExportActionPerformed(evt);
-        	}
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btn_ExportActionPerformed(evt);
+            }
         });
-        
+
         btn_Exit.setText("Exit");
         btn_Exit.setName("btn_Exit"); // NOI18N
         btn_Exit.addActionListener(new java.awt.event.ActionListener() {
@@ -90,6 +95,14 @@ public class ExportForm extends javax.swing.JFrame {
                 btn_ExitActionPerformed(evt);
             }
         });
+
+        jLabel5.setText("(CSV) file in the specified folder. Enter the name for the exported");
+
+        jLabel6.setText("file, then select the folder to export it to.");
+
+        jLabel7.setText("Enter File Name:");
+
+        txt_FileName.setName("txt_FileName"); // NOI18N
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
@@ -104,19 +117,26 @@ public class ExportForm extends javax.swing.JFrame {
                         .addGap(17, 17, 17)
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                             .addComponent(jLabel2, javax.swing.GroupLayout.PREFERRED_SIZE, 367, javax.swing.GroupLayout.PREFERRED_SIZE)
-                            .addGroup(layout.createSequentialGroup()
-                                .addComponent(jLabel3, javax.swing.GroupLayout.PREFERRED_SIZE, 78, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                .addGap(18, 18, 18)
-                                .addComponent(btn_Select))
-                            .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
-                                .addGroup(layout.createSequentialGroup()
-                                    .addComponent(btn_Exit)
-                                    .addGap(18, 18, 18)
-                                    .addComponent(btn_Export))
+                            .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING, false)
                                 .addGroup(layout.createSequentialGroup()
                                     .addComponent(jLabel4, javax.swing.GroupLayout.PREFERRED_SIZE, 45, javax.swing.GroupLayout.PREFERRED_SIZE)
                                     .addGap(18, 18, 18)
-                                    .addComponent(txt_Folder, javax.swing.GroupLayout.PREFERRED_SIZE, 281, javax.swing.GroupLayout.PREFERRED_SIZE))))))
+                                    .addComponent(txt_Folder, javax.swing.GroupLayout.PREFERRED_SIZE, 281, javax.swing.GroupLayout.PREFERRED_SIZE))
+                                .addComponent(jLabel5, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                                .addGroup(javax.swing.GroupLayout.Alignment.LEADING, layout.createSequentialGroup()
+                                    .addGap(182, 182, 182)
+                                    .addComponent(btn_Exit)
+                                    .addGap(18, 18, 18)
+                                    .addComponent(btn_Export))
+                                .addComponent(jLabel6, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                            .addGroup(layout.createSequentialGroup()
+                                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                                    .addComponent(jLabel3, javax.swing.GroupLayout.PREFERRED_SIZE, 78, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                    .addComponent(jLabel7, javax.swing.GroupLayout.PREFERRED_SIZE, 95, javax.swing.GroupLayout.PREFERRED_SIZE))
+                                .addGap(18, 18, 18)
+                                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                                    .addComponent(btn_Select)
+                                    .addComponent(txt_FileName, javax.swing.GroupLayout.PREFERRED_SIZE, 222, javax.swing.GroupLayout.PREFERRED_SIZE))))))
                 .addContainerGap(16, Short.MAX_VALUE))
         );
         layout.setVerticalGroup(
@@ -125,20 +145,28 @@ public class ExportForm extends javax.swing.JFrame {
                 .addContainerGap()
                 .addComponent(jLabel1)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                .addComponent(jLabel2, javax.swing.GroupLayout.PREFERRED_SIZE, 52, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addComponent(jLabel2)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(jLabel5)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(jLabel6)
                 .addGap(18, 18, 18)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(jLabel7)
+                    .addComponent(txt_FileName, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addGap(12, 12, 12)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(jLabel3)
                     .addComponent(btn_Select))
                 .addGap(18, 18, 18)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(jLabel4)
-                    .addComponent(txt_Folder, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addGap(27, 27, 27)
+                    .addComponent(txt_Folder, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(jLabel4))
+                .addGap(18, 18, 18)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(btn_Export)
                     .addComponent(btn_Exit))
-                .addContainerGap(29, Short.MAX_VALUE))
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
 
         pack();
@@ -147,6 +175,7 @@ public class ExportForm extends javax.swing.JFrame {
 
     private void btn_SelectActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btn_SelectActionPerformed
         fc.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
+        fc.setCurrentDirectory(new File("./IFATGrading"));
         int returnval = fc.showOpenDialog(this);
         if(returnval == JFileChooser.APPROVE_OPTION){
             try {
@@ -161,23 +190,32 @@ public class ExportForm extends javax.swing.JFrame {
         }
         txt_Folder.setEnabled(true);
     }//GEN-LAST:event_btn_SelectActionPerformed
-    
-    private void btn_ExportActionPerformed(java.awt.event.ActionEvent evt) {
-        // Check if the folder path is set
+
+    private void btn_ExitActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btn_ExitActionPerformed
+        System.exit(0);
+    }//GEN-LAST:event_btn_ExitActionPerformed
+
+    private void btn_ExportActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btn_ExportActionPerformed
+         // Check if the folder path is set
         if (!txt_Folder.getText().isEmpty()) {
             try {
                 File outputDir = new File(txt_Folder.getText());
-                
+                String fileName = txt_FileName.getText();
+                fileName += "_AssesmentResults.csv";
                 // Pass the studentCardTable and the output file to writeResultCSV
-                File resultCSV = new File(outputDir, "result.csv");
-                outputCSV.writeResultCSV(new ArrayList<>(studentCardTable.values()), resultCSV);
+                File resultCSV = new File(outputDir, fileName);
+                Boolean resCSV = outputCSV.writeResultCSV(new ArrayList<>(studentCardTable.values()), resultCSV);
                 
                 // Create a new folder named "Details" inside the output directory
-                File detailsDir = new File(outputDir, "Details");
+                File detailsDir = new File(outputDir, "IFAT Card Grading Details");
                 detailsDir.mkdir(); // Create the "Details" folder
 
                 // Pass the studentCardTable and the "Details" folder to writeDetailCSVs
-                outputCSV.writeDetailCSVs(new ArrayList<>(studentCardTable.values()), detailsDir);
+                Boolean detCSV = outputCSV.writeDetailCSVs(new ArrayList<>(studentCardTable.values()), detailsDir);
+                
+                if(resCSV && detCSV){
+                    JOptionPane.showMessageDialog(this, "Results successfully exported", "Results Exported", JOptionPane.INFORMATION_MESSAGE);
+                }
             } catch (Exception e) {
                 e.printStackTrace();
                 // Handle the exception appropriately, e.g., display an error message
@@ -188,10 +226,6 @@ public class ExportForm extends javax.swing.JFrame {
             JOptionPane.showMessageDialog(this, "Please select an empty folder to export the data.", "Export Error", JOptionPane.ERROR_MESSAGE);
         }
     }//GEN-LAST:event_btn_ExportActionPerformed
-
-    private void btn_ExitActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btn_ExitActionPerformed
-        System.exit(0);
-    }//GEN-LAST:event_btn_ExitActionPerformed
 
     /**
      * @param args the command line arguments
@@ -236,6 +270,10 @@ public class ExportForm extends javax.swing.JFrame {
     private javax.swing.JLabel jLabel2;
     private javax.swing.JLabel jLabel3;
     private javax.swing.JLabel jLabel4;
+    private javax.swing.JLabel jLabel5;
+    private javax.swing.JLabel jLabel6;
+    private javax.swing.JLabel jLabel7;
+    private javax.swing.JTextField txt_FileName;
     private javax.swing.JTextField txt_Folder;
     // End of variables declaration//GEN-END:variables
 }

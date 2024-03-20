@@ -17,8 +17,8 @@ public class OutputCSV {
      * @param cards List of all student IFAT card objects
      * @param file Output CSV file  
      */ 
-    public static void writeResultCSV(List<StudentIFATCard> cards, File file) throws Exception {
-        
+    public static Boolean writeResultCSV(List<StudentIFATCard> cards, File file) throws Exception {
+        Boolean res = false;
         PrintWriter writer = new PrintWriter(file);
         
         // Header
@@ -33,9 +33,11 @@ public class OutputCSV {
                 card.getGrade() + "," +
                 card.getFilePath()
            );
+            res = true;
         }
         
         writer.close();
+        return res;
     }
 
     /**
@@ -45,12 +47,12 @@ public class OutputCSV {
      * @param cards List of all student IFAT cards 
      * @param outputDir Directory to write CSV files
      */
-    public static void writeDetailCSVs(List<StudentIFATCard> cards, File outputDir) throws Exception {
+    public static Boolean writeDetailCSVs(List<StudentIFATCard> cards, File outputDir) throws Exception {
         // Ensure directory exists
+        Boolean res = false;
         if (!outputDir.exists()) {
             outputDir.mkdirs();
         }
-
         for (StudentIFATCard card : cards) {
             // Name file using student metadata
             String filename = card.getStudentNo() + "_" + card.getStudentName() + ".csv";
@@ -58,7 +60,7 @@ public class OutputCSV {
             PrintWriter writer = new PrintWriter(detailCSV);
 
             // Header
-            writer.println("Question,Attempts,Score");
+            
 
             // Row data
             for (int q = 0; q < card.getNumQuestions(); ++q) {
@@ -70,10 +72,11 @@ public class OutputCSV {
                 String attempts = attemptsBuilder.toString();
                 int p = q + 1;
                 writer.println(p + "," + attempts + "," + card.getScores()[q]);
+                
             }
-
+            res = true;
             writer.close();
         }
+        return res;
     }
-
 }

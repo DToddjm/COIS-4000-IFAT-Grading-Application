@@ -25,13 +25,26 @@ import org.opencv.core.MatOfByte;
 import org.opencv.core.MatOfPoint;
 import org.opencv.core.MatOfPoint2f;
 import java.awt.Point;
+import java.awt.image.DataBufferByte;
+import java.awt.image.DataBufferInt;
+import java.util.Collections;
+import org.opencv.calib3d.Calib3d;
+import org.opencv.core.DMatch;
+import org.opencv.core.KeyPoint;
+import org.opencv.core.MatOfDMatch;
+import org.opencv.core.MatOfKeyPoint;
 import org.opencv.core.Size;
+import org.opencv.features2d.DescriptorMatcher;
+import org.opencv.features2d.Features2d;
+import org.opencv.features2d.ORB;
+import org.opencv.highgui.HighGui;
 
 /**
  *
  * @author Davian Todd
  */
 public class IFATController {
+
     // method to load all scanned cards from a folder
     public Hashtable<String, StudentIFATCard> loadCards(String folder) throws Exception {
         // create a hashtable to store a list of IFAT cards
@@ -122,7 +135,7 @@ public class IFATController {
         // set the threshold values
         int horThresh = 35; // width of the pixel density rectangle
         int verThresh = 21; // height of the pixel density rectangle
-        int pdrArea = horThresh * verThresh; // area of the pixel density rectangle
+        int pdrArea = horThresh * verThresh; // maximum area of the pixel density rectangle
         int partialThresh = 715; // indicates the min number of pixels before a box is considered partially scratched
 
         // row/col index for top left corner of the pixel density rectangle
@@ -142,7 +155,7 @@ public class IFATController {
             for (int j = 0; j < mtx[j].length; j++) {
                 // assign the pixel value to pix
                 pix = mtx[i][j];
-                // if pix is 0, store the starting coordinates
+                // if pix is 0, store the starting (origin) coordinates
                 if (pix == 0) {
                     rIndx = i; // top left x coord
                     cIndx = j; // top left y coord
@@ -289,6 +302,21 @@ public class IFATController {
         BufferedImage bufImage = ImageIO.read(in);
         return bufImage;
     }
+    
+    private static BufferedImage convertTo3ByteBGRType(BufferedImage image) {
+        BufferedImage convertedImage = new BufferedImage(image.getWidth(), image.getHeight(),
+                BufferedImage.TYPE_3BYTE_BGR);
+        convertedImage.getGraphics().drawImage(image, 0, 0, null);
+        return convertedImage;
+    }
+
+    public Mat convertToMat(BufferedImage img) {
+        img = convertTo3ByteBGRType(img);
+        byte[] data = ((DataBufferByte) img.getRaster().getDataBuffer()).getData();
+        Mat mat = new Mat(img.getHeight(), img.getWidth(), CvType.CV_8UC3);
+        mat.put(0, 0, data);
+        return mat;
+    }
 
     // static helper method to convert a Mat obj to a 2D array of integers
     private static int[][] matTo2DArray(Mat mtx) {
@@ -313,5 +341,67 @@ public class IFATController {
             }
         }
         return intMtx;
+    }
+    public Mat alignImages(Mat img, Mat template){
+        // convert input image and template to grayscale
+        int maxFeatures = 500;
+        double keepPercent = 0.2;
+        Mat imgGray = new Mat();
+        Mat tempGray = new Mat();
+        Imgproc.cvtColor(img, imgGray, Imgproc.COLOR_RGB2GRAY);
+        Imgproc.cvtColor(template, tempGray, Imgproc.COLOR_RGB2GRAY);
+        
+        // use ORB to detect keypoints and extract features
+        ORB orb = ORB.create(maxFeatures);
+        MatOfKeyPoint kpsA = new MatOfKeyPoint();
+        MatOfKeyPoint kpsB = new MatOfKeyPoint();
+        Mat descA = new Mat();
+        Mat descB = new Mat();
+        
+        orb.detectAndCompute(imgGray, new Mat(), kpsA, descA);
+        orb.detectAndCompute(tempGray, new Mat(), kpsB, descB);
+        
+        // match the features
+        int method = DescriptorMatcher.BRUTEFORCE_HAMMING;
+        MatOfDMatch matches = new MatOfDMatch();
+        DescriptorMatcher matcher = DescriptorMatcher.create(method);
+        matcher.match(descA, descB, matches);
+        
+        // sort the matches by distance
+        List<DMatch> listMatch = matches.toList();
+        Collections.sort(listMatch, new DMatchComparator());
+        
+        // keep only the top matches
+        int keep = (int)(listMatch.size() * keepPercent);
+        matches.fromList(listMatch.subList(0, keep));
+        List<DMatch> goodMatches = listMatch.subList(0, keep);
+        
+        // loop over the top matches
+        List<org.opencv.core.Point> imgPoints = new ArrayList<>();
+        List<org.opencv.core.Point> tempPoints = new ArrayList<>();
+        List<KeyPoint> kplA = kpsA.toList();
+        List<KeyPoint> kplB = kpsB.toList();
+        
+        for(int i = 0; i< keep;i++){
+            // get the keypoints from the good matches
+            imgPoints.add(kplA.get(goodMatches.get(i).queryIdx).pt);
+            tempPoints.add(kplB.get(goodMatches.get(i).trainIdx).pt);
+        }
+        MatOfPoint2f imgMat = new MatOfPoint2f();
+        MatOfPoint2f tempMat = new MatOfPoint2f();
+        imgMat.fromList(imgPoints);
+        tempMat.fromList(tempPoints);
+        // compute the homography matrix
+        Mat homogMat = Calib3d.estimateAffinePartial2D(imgMat, tempMat);
+        Mat alignedImage = new Mat();
+        org.opencv.core.Size dsize = template.size();
+        Imgproc.warpAffine(img, alignedImage, homogMat, dsize);
+        
+        return alignedImage;
+    }
+    class DMatchComparator implements java.util.Comparator<DMatch>{
+        public int compare(DMatch a, DMatch b){
+            return (int)(a.distance - b.distance);
+        }
     }
 }
