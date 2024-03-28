@@ -1,9 +1,11 @@
 
 import java.io.File;
+import java.io.IOException;
 import java.util.Hashtable;
 import javax.swing.JFileChooser;
 import java.util.ArrayList;
 import javax.swing.JOptionPane;
+import org.apache.commons.io.FileUtils;
 
 /*
  * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
@@ -195,8 +197,8 @@ public class ExportForm extends javax.swing.JFrame {
         System.exit(0);
     }//GEN-LAST:event_btn_ExitActionPerformed
 
-    private void btn_ExportActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btn_ExportActionPerformed
-         // Check if the folder path is set
+    private void btn_ExportActionPerformed(java.awt.event.ActionEvent evt) {
+        // Check if the folder path is set
         if (!txt_Folder.getText().isEmpty()) {
             try {
                 File outputDir = new File(txt_Folder.getText());
@@ -204,16 +206,36 @@ public class ExportForm extends javax.swing.JFrame {
                 fileName += "_AssesmentResults.csv";
                 // Pass the studentCardTable and the output file to writeResultCSV
                 File resultCSV = new File(outputDir, fileName);
+
+                // Copy the "./IFATGrading/Images" directory to the "Images" folder in the output directory
+                File imagesSourceDir = new File("./IFATGrading/Images");
+                if (imagesSourceDir.exists() && imagesSourceDir.isDirectory()) {
+                    File imagesTargetDir = new File(outputDir, "Images");
+                    try {
+                        FileUtils.copyDirectory(imagesSourceDir, imagesTargetDir);
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                        // Handle the IOException appropriately, e.g., display an error message
+                        JOptionPane.showMessageDialog(this, "An error occurred while copying the images: " + e.getMessage(), "Copy Error", JOptionPane.ERROR_MESSAGE);
+                    }
+                }
+
+                // Update the file paths of the StudentIFATCard objects
+                for (StudentIFATCard card : studentCardTable.values()) {
+                    String cardFileName = card.getFileName();
+                    card.setFilePath("Images/" + cardFileName);
+                }
+
                 Boolean resCSV = outputCSV.writeResultCSV(new ArrayList<>(studentCardTable.values()), resultCSV);
-                
+
                 // Create a new folder named "Details" inside the output directory
                 File detailsDir = new File(outputDir, "IFAT Card Grading Details");
                 detailsDir.mkdir(); // Create the "Details" folder
 
                 // Pass the studentCardTable and the "Details" folder to writeDetailCSVs
                 Boolean detCSV = outputCSV.writeDetailCSVs(new ArrayList<>(studentCardTable.values()), detailsDir);
-                
-                if(resCSV && detCSV){
+
+                if (resCSV && detCSV) {
                     JOptionPane.showMessageDialog(this, "Results successfully exported", "Results Exported", JOptionPane.INFORMATION_MESSAGE);
                 }
             } catch (Exception e) {
