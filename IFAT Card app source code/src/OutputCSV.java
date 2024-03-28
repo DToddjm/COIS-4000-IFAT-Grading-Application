@@ -60,7 +60,7 @@ public class OutputCSV {
             PrintWriter writer = new PrintWriter(detailCSV);
 
             // Header
-            
+            writer.println("Question,Attempts,Score");
 
             // Row data
             for (int q = 0; q < card.getNumQuestions(); ++q) {
