@@ -44,6 +44,28 @@ import org.opencv.highgui.HighGui;
  * @author Davian Todd
  */
 public class IFATController {
+    private Hashtable<String,Integer> controllerConfig;
+    // set default controller settings
+    
+    public IFATController(){
+        // Image detection preprocessing default settings
+        controllerConfig.put("roiX", 35);
+        controllerConfig.put("roiY", 110);
+        controllerConfig.put("width", 250);
+        controllerConfig.put("height", 350);
+        controllerConfig.put("lower", 115);
+        controllerConfig.put("upper", 180);
+        // Image detection algorithm default settings
+        controllerConfig.put("horThresh", 35);
+        controllerConfig.put("verThresh", 21);
+        controllerConfig.put("partialThresh",715);
+        // Image alignment algorith default settings
+        controllerConfig.put("maxFeatures", 500);
+        controllerConfig.put("keepPercent", 20);
+    }
+    public IFATController(Hashtable<String,Integer> settings){
+        controllerConfig = settings;
+    }
 
     // method to load all scanned cards from a folder
     public Hashtable<String, StudentIFATCard> loadCards(String folder) throws Exception {
@@ -81,9 +103,18 @@ public class IFATController {
     }
 
     // image detection method to be invoked
+    // includes all of the preprocessing needed for the image detection algorithm
     public int[][] detect(StudentIFATCard card) {
+        
+        int X = controllerConfig.get("roiX");
+        int Y = controllerConfig.get("roiY");
+        int width = controllerConfig.get("width");
+        int height = controllerConfig.get("height");
+        int maskLower = controllerConfig.get("lower");
+        int maskUpper = controllerConfig.get("upper");
+        
         // set the bounds of the rectangle to define the roi
-        Rect rect = new Rect(35, 110, 250, 350);
+        Rect rect = new Rect(X, Y, width, height);
         // get the roi based on the rectangle
         Mat roi = new Mat(card.getMatObj(), rect);
         // set the roi for the student IFAT card
@@ -93,8 +124,8 @@ public class IFATController {
         // convert the roi to grayscale
         Imgproc.cvtColor(roi, gray, Imgproc.COLOR_RGB2GRAY);
         // create upper/lower bound Scalars for the grayscale image
-        Scalar low = new Scalar(115);
-        Scalar high = new Scalar(180);
+        Scalar low = new Scalar(maskLower);
+        Scalar high = new Scalar(maskUpper);
         // Mat obj that stores the grayscale mask
         Mat mask = new Mat();
         // mask the pixels within the scalar range
@@ -108,37 +139,25 @@ public class IFATController {
         return cardArray;
     }
 
-    // method to potentially detect student number, name and course code
-    public void detectStudent(StudentIFATCard card) {
-
-    }
-
-    // method to print/view the details of the IFAT card
-    public void printCard(StudentIFATCard card) {
-
-    }
-
-    // method to export the data
-    public void exportData(Hashtable<String, StudentIFATCard> cardTable) {
-
-    }
-
     // Image detection and card matrix mapping algorithm
-    private static int[][] mapToCard(int[][] mtx, int boxes, int questions) {
+    private int[][] mapToCard(int[][] mtx, int boxes, int questions) {
         // initialize card array to the size of the IFAT card questions and boxes
         int[][] cardArray = new int[questions][boxes];
 
         // get the number of rows/cols from the 2D pixel array
+        // the number of rows is equivalent to the height (in pixels) of the ROI
         int numRows = mtx.length;
+        // the number of cols is equivalent to the width (in pixels) of the ROI
         int numCols = mtx[boxes].length;
 
         // set the threshold values
-        int horThresh = 35; // width of the pixel density rectangle
-        int verThresh = 21; // height of the pixel density rectangle
+        int horThresh = controllerConfig.get("horThresh"); // width of the pixel density rectangle
+        int verThresh = controllerConfig.get("verThresh"); // height of the pixel density rectangle
         int pdrArea = horThresh * verThresh; // maximum area of the pixel density rectangle
-        int partialThresh = 715; // indicates the min number of pixels before a box is considered partially scratched
+        // indicates the min number of pixels before a box is considered partially scratched
+        int partialThresh = controllerConfig.get("partialThresh"); 
 
-        // row/col index for top left corner of the pixel density rectangle
+        // row/col index for top left corner(point) of the pixel density rectangle
         int rIndx;
         int cIndx;
 
@@ -222,7 +241,7 @@ public class IFATController {
                 }
             }
         } // end of 2D pixel array traversal
-
+        // point mapping process
         // set each value in the card array to 1 (scratched)
         for (int i = 0; i < cardArray.length; i++) {
             for (int j = 0; j < cardArray[j].length; j++) {
@@ -247,7 +266,7 @@ public class IFATController {
                 // stores whether the x/y indicies have been found
                 boolean xfound = false;
                 boolean yfound = false;
-                int j = 1;
+                int j = 1; //counter variable for the while loop
                 // while loop that traverses the rows of the cardArray
                 while (!xfound && j < (cardArray.length) + 1) {
                     // if statement that checks if the x coord is within the bounds
@@ -263,7 +282,7 @@ public class IFATController {
                     }
                     j++;
                 }
-                j = 1;
+                j = 1; // reset while loop counter
                 // while loop that traverses the cols of the cardArray
                 while (!yfound && j < (cardArray[j].length) + 1) {
                     // if statement that checks if the y coord is within the bounds
@@ -289,7 +308,7 @@ public class IFATController {
     }
 
     // static helper method to convert a Mat obj to a buffered image for display
-    private static BufferedImage convertToBuff(Mat mtx) throws IOException {
+    public BufferedImage convertToBuff(Mat mtx) throws IOException {
         //Encoding the image
         MatOfByte matOfByte = new MatOfByte();
         Imgcodecs.imencode(".png", mtx, matOfByte);
@@ -344,8 +363,8 @@ public class IFATController {
     }
     public Mat alignImages(Mat img, Mat template){
         // convert input image and template to grayscale
-        int maxFeatures = 500;
-        double keepPercent = 0.2;
+        int maxFeatures = controllerConfig.get("maxFeatures");
+        double keepPercent = (double) controllerConfig.get("keepPercent") / 100;
         Mat imgGray = new Mat();
         Mat tempGray = new Mat();
         Imgproc.cvtColor(img, imgGray, Imgproc.COLOR_RGB2GRAY);

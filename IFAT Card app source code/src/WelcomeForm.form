@@ -36,6 +36,8 @@
                           <Component id="lbl_Title" min="-2" pref="518" max="-2" attributes="0"/>
                           <Group type="103" alignment="0" groupAlignment="1" max="-2" attributes="0">
                               <Group type="102" alignment="1" attributes="0">
+                                  <Component id="btn_Settings" min="-2" max="-2" attributes="0"/>
+                                  <EmptySpace max="32767" attributes="0"/>
                                   <Component id="btn_Exit" min="-2" max="-2" attributes="0"/>
                                   <EmptySpace type="separate" max="-2" attributes="0"/>
                                   <Component id="btn_Next" min="-2" max="-2" attributes="0"/>
@@ -54,7 +56,7 @@
                       <Component id="lbl_Desc" min="-2" max="-2" attributes="0"/>
                   </Group>
               </Group>
-              <EmptySpace pref="32" max="32767" attributes="0"/>
+              <EmptySpace pref="20" max="32767" attributes="0"/>
           </Group>
       </Group>
     </DimensionLayout>
@@ -76,6 +78,7 @@
               <Group type="103" groupAlignment="3" attributes="0">
                   <Component id="btn_Next" alignment="3" min="-2" max="-2" attributes="0"/>
                   <Component id="btn_Exit" alignment="3" min="-2" max="-2" attributes="0"/>
+                  <Component id="btn_Settings" alignment="3" min="-2" max="-2" attributes="0"/>
               </Group>
               <EmptySpace pref="30" max="32767" attributes="0"/>
           </Group>
@@ -236,6 +239,14 @@
         <Property name="text" type="java.lang.String" value="C://filepath"/>
         <Property name="name" type="java.lang.String" value="txt_filepath" noResource="true"/>
       </Properties>
+    </Component>
+    <Component class="javax.swing.JButton" name="btn_Settings">
+      <Properties>
+        <Property name="text" type="java.lang.String" value="Settings"/>
+      </Properties>
+      <Events>
+        <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="btn_SettingsActionPerformed"/>
+      </Events>
     </Component>
   </SubComponents>
 </Form>

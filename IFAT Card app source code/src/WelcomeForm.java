@@ -9,7 +9,9 @@ import java.awt.image.BufferedImage;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.Hashtable;
 import javax.imageio.ImageIO;
+//import nu.pattern.OpenCV;
 
 import org.apache.pdfbox.Loader;
 import org.apache.pdfbox.pdmodel.PDDocument;
@@ -31,18 +33,30 @@ public class WelcomeForm extends javax.swing.JFrame {
      */
     String path;
     private final JFileChooser fc;
-    IFATController controller = new IFATController();
+    boolean isConfigured = false;
+    private Hashtable<String, Integer> controllerConfig;
+    IFATController controller;
 
     public WelcomeForm() {
         initComponents();
         fc = new JFileChooser();
-
+        controllerConfig = new Hashtable<String, Integer>();
+        loadDefaultSettings();
+        
         /* uncomment the next line and add an absolute path to set the default 
         directory when the open file dialog runs. It saves you from manually
         navigating to the folder with the images each time the application runs
-        though this is strictly optional and the app still functions without it.
+        though this is strictly for repeated testing purposes
+        and the app still functions without it.
          */
         //fc.setCurrentDirectory(new File(""));
+    }
+
+    public WelcomeForm(Hashtable<String, Integer> settings) {
+        initComponents();
+        fc = new JFileChooser();
+        controllerConfig = settings;
+        isConfigured = true;
     }
 
     /**
@@ -67,6 +81,7 @@ public class WelcomeForm extends javax.swing.JFrame {
         btn_Next = new javax.swing.JButton();
         btn_Exit = new javax.swing.JButton();
         txt_filepath = new javax.swing.JTextField();
+        btn_Settings = new javax.swing.JButton();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
         setTitle("IFAT Assessment Grading Application");
@@ -179,6 +194,13 @@ public class WelcomeForm extends javax.swing.JFrame {
         txt_filepath.setText("C://filepath");
         txt_filepath.setName("txt_filepath"); // NOI18N
 
+        btn_Settings.setText("Settings");
+        btn_Settings.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btn_SettingsActionPerformed(evt);
+            }
+        });
+
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
         layout.setHorizontalGroup(
@@ -191,6 +213,8 @@ public class WelcomeForm extends javax.swing.JFrame {
                             .addComponent(lbl_Title, javax.swing.GroupLayout.PREFERRED_SIZE, 518, javax.swing.GroupLayout.PREFERRED_SIZE)
                             .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING, false)
                                 .addGroup(layout.createSequentialGroup()
+                                    .addComponent(btn_Settings)
+                                    .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                                     .addComponent(btn_Exit)
                                     .addGap(18, 18, 18)
                                     .addComponent(btn_Next))
@@ -202,7 +226,7 @@ public class WelcomeForm extends javax.swing.JFrame {
                     .addGroup(layout.createSequentialGroup()
                         .addGap(41, 41, 41)
                         .addComponent(lbl_Desc)))
-                .addContainerGap(32, Short.MAX_VALUE))
+                .addContainerGap(20, Short.MAX_VALUE))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -220,7 +244,8 @@ public class WelcomeForm extends javax.swing.JFrame {
                 .addGap(18, 18, 18)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(btn_Next)
-                    .addComponent(btn_Exit))
+                    .addComponent(btn_Exit)
+                    .addComponent(btn_Settings))
                 .addContainerGap(30, Short.MAX_VALUE))
         );
 
@@ -255,7 +280,7 @@ public class WelcomeForm extends javax.swing.JFrame {
                 txt_filepath.setText(path);
                 btn_Next.setEnabled(true);
                 Path dir = Paths.get("./IFATGrading/Grading Results");
-                if(!Files.exists(dir)){
+                if (!Files.exists(dir)) {
                     Files.createDirectories(dir);
                 }
             } catch (Exception e) {
@@ -272,20 +297,24 @@ public class WelcomeForm extends javax.swing.JFrame {
 
     private void btn_NextActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btn_NextActionPerformed
         close();
-        LoadingForm lf = new LoadingForm(path);
+        LoadingForm lf = new LoadingForm(path,controllerConfig);
         lf.setVisible(true);
     }//GEN-LAST:event_btn_NextActionPerformed
 
     private void btn_PDFActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btn_PDFActionPerformed
         //JFileChooser fileChooser = new JFileChooser();
+        if (isConfigured) {
+            controller = new IFATController(controllerConfig);
+        } else {
+            controller = new IFATController();
+        }
         Imgcodecs codecs = new Imgcodecs();
-        String templatePath = ".\\Template";
+        String templatePath = "C:\\Users\\YahMa\\OneDrive\\Documents\\TrentU\\Year four\\Fall 2023\\Software Engineering Project\\Automated IFAT Grading System\\IFATApplication\\dist\\Template";
         fc.setFileSelectionMode(JFileChooser.FILES_ONLY);
         int returnValue = fc.showOpenDialog(this);
         if (returnValue == JFileChooser.APPROVE_OPTION) {
             File selectedFile = fc.getSelectedFile();
 
-            
             Mat regTemplate = codecs.imread(templatePath + "\\test card1.png");
 
             try {
@@ -296,37 +325,33 @@ public class WelcomeForm extends javax.swing.JFrame {
                 int numPages = document.getNumberOfPages();
                 BufferedImage[] pdfPages = new BufferedImage[numPages]; // Array to store pages of PDF as BufferedImage
                 Mat[] cardMatObjs = new Mat[numPages];
-                
 
                 // Iterate through each page and render as BufferedImage/Mat obj
                 for (int i = 0; i < numPages; i++) {
                     pdfPages[i] = renderer.renderImage(i);
                     cardMatObjs[i] = controller.convertToMat(pdfPages[i]);
-                    Imgproc.resize(cardMatObjs[i], cardMatObjs[i], new Size(0,0), 0.8, 0.8,Imgproc.INTER_AREA);
+                    Imgproc.resize(cardMatObjs[i], cardMatObjs[i], new Size(0, 0), 0.8, 0.8, Imgproc.INTER_AREA);
                     cardMatObjs[i] = controller.alignImages(cardMatObjs[i], regTemplate);
                 }
-                
 
-                
                 Path dir = Paths.get("./IFATGrading/Images");
-                if(!Files.exists(dir)){
+                if (!Files.exists(dir)) {
                     Files.createDirectories(dir);
                 }
                 Path resultDir = Paths.get("./IFATGrading/Grading Results");
-                if(!Files.exists(resultDir)){
+                if (!Files.exists(resultDir)) {
                     Files.createDirectories(resultDir);
                 }
 
                 String tempFileName;
-                
+
                 for (int i = 0; i < numPages; i++) {
-                	
-                //	write to image folder
-                        tempFileName = "./IFATGrading/Images/pdfScan_" + i + ".png";
-                        codecs.imwrite(tempFileName,cardMatObjs[i]);
+
+                    //	write to image folder
+                    tempFileName = "./IFATGrading/Images/pdfScan_" + i + ".png";
+                    codecs.imwrite(tempFileName, cardMatObjs[i]);
                 }
-                
-                
+
                 path = ("./IFATGrading/Images");
                 txt_filepath.setText("/IFATGrading/Images");
                 document.close();
@@ -342,9 +367,36 @@ public class WelcomeForm extends javax.swing.JFrame {
         }
     }//GEN-LAST:event_btn_PDFActionPerformed
 
+    private void btn_SettingsActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btn_SettingsActionPerformed
+        close();
+        SettingsForm sf;
+        if (isConfigured) {
+            sf = new SettingsForm(controllerConfig);
+        }else{
+            sf = new SettingsForm();
+        }
+        sf.setVisible(true);
+    }//GEN-LAST:event_btn_SettingsActionPerformed
+
     public void close() {
         WindowEvent closeWindow = new WindowEvent(this, WindowEvent.WINDOW_CLOSING);
         Toolkit.getDefaultToolkit().getSystemEventQueue().postEvent(closeWindow);
+    }
+    public void loadDefaultSettings(){
+        // Image detection preprocessing default settings
+        controllerConfig.put("roiX", 35);
+        controllerConfig.put("roiY", 110);
+        controllerConfig.put("width", 250);
+        controllerConfig.put("height", 350);
+        controllerConfig.put("lower", 115);
+        controllerConfig.put("upper", 180);
+        // Image detection algorithm default settings
+        controllerConfig.put("horThresh", 35);
+        controllerConfig.put("verThresh", 21);
+        controllerConfig.put("partialThresh",715);
+        // Image alignment algorith default settings
+        controllerConfig.put("maxFeatures", 500);
+        controllerConfig.put("keepPercent", 20);
     }
 
     /**
@@ -374,7 +426,7 @@ public class WelcomeForm extends javax.swing.JFrame {
             java.util.logging.Logger.getLogger(WelcomeForm.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
         }
         //</editor-fold>
-
+        //OpenCV.loadLocally();
         /* Create and display the form */
         java.awt.EventQueue.invokeLater(new Runnable() {
             public void run() {
@@ -389,6 +441,7 @@ public class WelcomeForm extends javax.swing.JFrame {
     private javax.swing.JButton btn_Folder;
     private javax.swing.JButton btn_Next;
     private javax.swing.JButton btn_PDF;
+    private javax.swing.JButton btn_Settings;
     private javax.swing.JRadioButton jRadioButton1;
     private javax.swing.JRadioButton jRadioButton2;
     private javax.swing.JLabel lbl_Desc;

@@ -5,6 +5,7 @@ import java.awt.image.BufferedImage;
 import java.util.Enumeration;
 import java.util.Hashtable;
 import javax.swing.ImageIcon;
+import javax.swing.JOptionPane;
 import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.DefaultTreeModel;
 
@@ -12,35 +13,38 @@ import javax.swing.tree.DefaultTreeModel;
  * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
  * Click nbfs://nbhost/SystemFileSystem/Templates/GUIForms/JFrame.java to edit this template
  */
-
 /**
  *
  * @author YahMa
  */
 public class LoadingForm extends javax.swing.JFrame {
-    
+
     String folderpath;
     Hashtable<String, StudentIFATCard> studentCardTable;
     IFATController controller;
+    private Hashtable<String, Integer> controllerConfig;
     DefaultTreeModel cardTreeModel;
     DefaultMutableTreeNode cardList = new DefaultMutableTreeNode("IFAT Card List");
-    
+
     /**
      * Creates new form LoadingForm
      */
     public LoadingForm() {
         initComponents();
     }
-    public LoadingForm(String path){
+
+    public LoadingForm(String path, Hashtable<String, Integer> settings) {
         initComponents();
-        controller = new IFATController();
+        controllerConfig = settings;
+        controller = new IFATController(controllerConfig);
+        
         try {
             folderpath = path;
             studentCardTable = controller.loadCards(path);
             loadNodes();
         } catch (Exception e) {
         }
-        
+
     }
 
     /**
@@ -286,7 +290,7 @@ public class LoadingForm extends javax.swing.JFrame {
 
     private void btn_BackActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btn_BackActionPerformed
         close();
-        WelcomeForm wf = new WelcomeForm();
+        WelcomeForm wf = new WelcomeForm(controllerConfig);
         wf.setVisible(true);
     }//GEN-LAST:event_btn_BackActionPerformed
 
@@ -295,20 +299,25 @@ public class LoadingForm extends javax.swing.JFrame {
     }//GEN-LAST:event_btn_ExitActionPerformed
 
     private void tree_CardTreeMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_tree_CardTreeMouseClicked
-        cardList = (DefaultMutableTreeNode)tree_CardTree.getSelectionPath().getLastPathComponent();
-        String filename = cardList.getUserObject().toString();
-        StudentIFATCard card = studentCardTable.get(filename);
-        txt_Filepath.setText(card.getFilePath());
-        displayCard(card);
-        btn_Confirm.setEnabled(true);
-        txt_Fname.setEnabled(true);
-        txt_Lname.setEnabled(true);
-        txt_StdNo.setEnabled(true);
-        txt_Course.setEnabled(true);
-        txt_Fname.setText("");
-        txt_Lname.setText("");
-        txt_StdNo.setText("");
-        txt_Course.setText("");
+        try {
+            cardList = (DefaultMutableTreeNode) tree_CardTree.getSelectionPath().getLastPathComponent();
+            String filename = cardList.getUserObject().toString();
+            StudentIFATCard card = studentCardTable.get(filename);
+            txt_Filepath.setText(card.getFilePath());
+            displayCard(card);
+            btn_Confirm.setEnabled(true);
+            txt_Fname.setEnabled(true);
+            txt_Lname.setEnabled(true);
+            txt_StdNo.setEnabled(true);
+            txt_Course.setEnabled(true);
+            txt_Fname.setText("");
+            txt_Lname.setText("");
+            txt_StdNo.setText("");
+            txt_Course.setText("");
+        }catch(NullPointerException e){
+            JOptionPane.showMessageDialog(this, "Cannot display this card",
+                "Error Displaying Card", JOptionPane.ERROR_MESSAGE);
+        }
     }//GEN-LAST:event_tree_CardTreeMouseClicked
 
     private void txt_FnameActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_txt_FnameActionPerformed
@@ -316,25 +325,25 @@ public class LoadingForm extends javax.swing.JFrame {
     }//GEN-LAST:event_txt_FnameActionPerformed
 
     private void btn_ConfirmActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btn_ConfirmActionPerformed
-        cardList = (DefaultMutableTreeNode)tree_CardTree.getSelectionPath().getLastPathComponent();
+        cardList = (DefaultMutableTreeNode) tree_CardTree.getSelectionPath().getLastPathComponent();
         String filename = cardList.getUserObject().toString();
         StudentIFATCard card = studentCardTable.get(filename);
-        
+
         String fname;
         String lname;
         String course;
         String stdNo;
         try {
-            if(btn_Confirm.isEnabled()){
+            if (btn_Confirm.isEnabled()) {
                 fname = txt_Fname.getText();
                 lname = txt_Lname.getText();
                 course = txt_Course.getText();
                 stdNo = txt_StdNo.getText();
-                
+
                 card.setStudentName(fname + " " + lname);
                 card.setCourse(course);
                 card.setStudentNO(Integer.parseInt(stdNo));
-                
+
                 studentCardTable.put(filename, card);
             }
         } catch (Exception e) {
@@ -343,27 +352,30 @@ public class LoadingForm extends javax.swing.JFrame {
 
     private void btn_NextActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btn_NextActionPerformed
         close();
-        ConfigureForm cf = new ConfigureForm(folderpath,studentCardTable);
+        ConfigureForm cf = new ConfigureForm(folderpath, studentCardTable, controllerConfig);
         cf.setVisible(true);
     }//GEN-LAST:event_btn_NextActionPerformed
-    public void close(){
+    public void close() {
         WindowEvent closeWindow = new WindowEvent(this, WindowEvent.WINDOW_CLOSING);
         Toolkit.getDefaultToolkit().getSystemEventQueue().postEvent(closeWindow);
     }
-    public void loadNodes(){
+
+    public void loadNodes() {
         Enumeration enu = studentCardTable.keys();
-        while(enu.hasMoreElements()){
+        while (enu.hasMoreElements()) {
             cardList.add(new DefaultMutableTreeNode(enu.nextElement()));
         }
-        cardTreeModel = (DefaultTreeModel)tree_CardTree.getModel();
+        cardTreeModel = (DefaultTreeModel) tree_CardTree.getModel();
         cardTreeModel.setRoot(cardList);
         tree_CardTree.setModel(cardTreeModel);
     }
-    public void displayCard(StudentIFATCard card){
+
+    public void displayCard(StudentIFATCard card) {
         BufferedImage img = card.getBuffImage();
         ImageIcon cardImage = new ImageIcon(img);
         lbl_Image.setIcon(cardImage);
     }
+
     /**
      * @param args the command line arguments
      */

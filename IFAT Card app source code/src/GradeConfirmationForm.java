@@ -3,39 +3,55 @@ import java.awt.Toolkit;
 import java.awt.event.WindowEvent;
 import java.util.Enumeration;
 import java.util.Hashtable;
+import javax.swing.JOptionPane;
+import org.opencv.core.CvException;
 
 /*
  * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
  * Click nbfs://nbhost/SystemFileSystem/Templates/GUIForms/JFrame.java to edit this template
  */
-
 /**
  *
  * @author YahMa
  */
 public class GradeConfirmationForm extends javax.swing.JFrame {
-    
+
     Hashtable<String, StudentIFATCard> studentCardTable;
     private int questNum;
     private int boxNum;
     private int cardNum = 0;
     int[] answerKey;
     private String folderPath;
+    IFATController controller;
+    private Hashtable<String, Integer> controllerConfig;
+
     /*
      * Creates new form GradeConfirmationForm
      */
     public GradeConfirmationForm() {
         initComponents();
     }
-    public GradeConfirmationForm(String path,Hashtable<String, StudentIFATCard> cards,
-            int[] answers, int qnum, int bnum) {
+
+    public GradeConfirmationForm(String path, Hashtable<String, StudentIFATCard> cards,
+            int[] answers, int qnum, int bnum, Hashtable<String, Integer> settings) {
         folderPath = path;
         studentCardTable = cards;
         answerKey = answers;
         questNum = qnum;
         boxNum = bnum;
-        gradeCards();
+        controllerConfig = settings;
+
+        try {
+            gradeCards();
+        } catch (CvException e) {
+            JOptionPane.showMessageDialog(this, "There was an error in the configuration of one of your settings",
+                    "Settings Configuration Error", JOptionPane.ERROR_MESSAGE);
+            close();
+            SettingsForm sf = new SettingsForm(settings);
+            sf.setVisible(true);
+        }
         
+
         initComponents();
     }
 
@@ -109,20 +125,20 @@ public class GradeConfirmationForm extends javax.swing.JFrame {
 
     private void btn_ViewActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btn_ViewActionPerformed
         close();
-        DisplayGradeForm dg = new DisplayGradeForm(folderPath
-                ,studentCardTable, answerKey, questNum, boxNum);
+        DisplayGradeForm dg = new DisplayGradeForm(folderPath,
+                studentCardTable, answerKey, questNum, boxNum, controllerConfig);
         dg.setVisible(true);
     }//GEN-LAST:event_btn_ViewActionPerformed
 
     private void formWindowOpened(java.awt.event.WindowEvent evt) {//GEN-FIRST:event_formWindowOpened
         lbl_Output.setText("Successfully graded " + cardNum + " out of " + cardNum + " IFAT cards");
     }//GEN-LAST:event_formWindowOpened
-    private void gradeCards(){
-        IFATController controller = new IFATController();
+    private void gradeCards() throws CvException{
+        controller = new IFATController(controllerConfig);
         StudentIFATCard card;
         int[][] cardArray;
         Enumeration<String> en = studentCardTable.keys();
-        while(en.hasMoreElements()){
+        while (en.hasMoreElements()) {
             String key = en.nextElement();
             card = studentCardTable.get(key);
             cardArray = controller.detect(card);
@@ -131,10 +147,12 @@ public class GradeConfirmationForm extends javax.swing.JFrame {
             cardNum++;
         }
     }
+
     public void close() {
         WindowEvent closeWindow = new WindowEvent(this, WindowEvent.WINDOW_CLOSING);
         Toolkit.getDefaultToolkit().getSystemEventQueue().postEvent(closeWindow);
     }
+
     /**
      * @param args the command line arguments
      */

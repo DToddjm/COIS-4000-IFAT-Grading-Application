@@ -6,6 +6,7 @@ import java.awt.image.BufferedImage;
 import java.util.Enumeration;
 import java.util.Hashtable;
 import javax.swing.JLabel;
+import javax.swing.JOptionPane;
 import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.DefaultTreeModel;
 
@@ -27,7 +28,7 @@ public class DisplayGradeForm extends javax.swing.JFrame {
     private String filename;
     public JLabel[][] labels;
     BufferedImage imgCard;
-
+    private Hashtable<String,Integer> controllerConfig;
     DefaultTreeModel cardTreeModel;
     DefaultMutableTreeNode cardList = new DefaultMutableTreeNode("IFAT Card List");
 
@@ -39,12 +40,13 @@ public class DisplayGradeForm extends javax.swing.JFrame {
     }
 
     public DisplayGradeForm(String path, Hashtable<String, StudentIFATCard> cards,
-            int[] answers, int qnum, int bnum) {
+            int[] answers, int qnum, int bnum, Hashtable<String,Integer> settings) {
         folderPath = path;
         studentCardTable = cards;
         answerKey = answers;
         questNum = qnum;
         boxNum = bnum;
+        controllerConfig = settings;
         initComponents();
         loadNodes();
     }
@@ -303,7 +305,8 @@ public class DisplayGradeForm extends javax.swing.JFrame {
     }//GEN-LAST:event_btn_ExitActionPerformed
 
     private void tree_CardTreeMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_tree_CardTreeMouseClicked
-        cardList = (DefaultMutableTreeNode) tree_CardTree.getSelectionPath().getLastPathComponent();
+        try{
+           cardList = (DefaultMutableTreeNode) tree_CardTree.getSelectionPath().getLastPathComponent();
         filename = cardList.getUserObject().toString();
         StudentIFATCard card = studentCardTable.get(filename);
         int[][] cardArray = card.getCardArray();
@@ -337,12 +340,17 @@ public class DisplayGradeForm extends javax.swing.JFrame {
         txt_Name.setText(card.getStudentName());
         txt_StdNo.setText(card.getStudentNo() + "");
         imgCard = card.getBuffImage();
-        btn_Display.setEnabled(true);
+        btn_Display.setEnabled(true); 
+        }catch(NullPointerException e){
+            JOptionPane.showMessageDialog(this, "Cannot display this card",
+                "Error Displaying Card", JOptionPane.ERROR_MESSAGE);
+        }
+        
     }//GEN-LAST:event_tree_CardTreeMouseClicked
 
     private void btn_DisplayActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btn_DisplayActionPerformed
         StudentIFATCard card = studentCardTable.get(filename);
-        DisplayCardForm dc = new DisplayCardForm(card);
+        DisplayCardForm dc = new DisplayCardForm(card,controllerConfig);
         dc.setVisible(true);
     }//GEN-LAST:event_btn_DisplayActionPerformed
 

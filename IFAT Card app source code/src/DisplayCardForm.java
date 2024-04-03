@@ -1,28 +1,32 @@
 
 import java.awt.event.WindowEvent;
 import java.awt.image.BufferedImage;
+import java.util.Hashtable;
 import javax.swing.ImageIcon;
 
 /*
  * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
  * Click nbfs://nbhost/SystemFileSystem/Templates/GUIForms/JFrame.java to edit this template
  */
-
 /**
  *
  * @author YahMa
  */
 public class DisplayCardForm extends javax.swing.JFrame {
-    
+
     StudentIFATCard student;
+    private Hashtable<String, Integer> controllerConfig;
+
     /**
      * Creates new form DisplayCardForm
      */
     public DisplayCardForm() {
         initComponents();
     }
-    public DisplayCardForm(StudentIFATCard card) {
+
+    public DisplayCardForm(StudentIFATCard card, Hashtable<String, Integer> settings) {
         initComponents();
+        controllerConfig = settings;
         student = card;
     }
 
@@ -103,11 +107,19 @@ public class DisplayCardForm extends javax.swing.JFrame {
         this.setVisible(false);
         this.dispose();
     }//GEN-LAST:event_btn_CloseActionPerformed
-    public void displayCard(StudentIFATCard card){
-        BufferedImage img = card.getBuffImage();
-        ImageIcon cardImage = new ImageIcon(img);
-        lbl_Image.setIcon(cardImage);
+    public void displayCard(StudentIFATCard card) {
+        try {
+            BufferedImage img = card.getBuffImage();
+            //IFATController controller = new IFATController(controllerConfig);
+            //BufferedImage img = controller.convertToBuff(card.getCardROI());
+            ImageIcon cardImage = new ImageIcon(img);
+            lbl_Image.setIcon(cardImage);
+        } catch (Exception e) {
+            
+        }
+
     }
+
     /**
      * @param args the command line arguments
      */
